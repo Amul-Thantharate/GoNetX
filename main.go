@@ -121,21 +121,11 @@ func DisplayOSInformation(c *cli.Context) error {
 			fmt.Println(output)
 		}
 	case "windows":
-		// More detailed Windows version information
-		cmd := "cmd"
-		args := []string{"/c", "ver"}
+		cmd := "systeminfo"
+		args := []string{"|", "findstr", "/B", "/C:\"OS Name\"", "/C:\"OS Version\""}
 		output, err := ExecuteCommand(cmd, args...)
 		if err != nil {
-			color.Red("Error getting Windows version info: %v\n", err) // Red
-		} else {
-			fmt.Println(output)
-		}
-
-		cmd = "wmic"
-		args = []string{"os", "get", "Caption,Version", "/format:list"}
-		output, err = ExecuteCommand(cmd, args...)
-		if err != nil {
-			color.Red("Error getting more detailed Windows version info: %v\n", err) // Red
+			color.Red("Error getting Windows version info: %v\n", err)
 		} else {
 			fmt.Println(output)
 		}
@@ -163,27 +153,19 @@ func DisplayRAMInformation(c *cli.Context) error {
 		}
 		fmt.Println(output)
 	case "windows":
-		cmd := "wmic"
-		args := []string{"memorychip", "get", "Capacity,Speed,Manufacturer"}
+		cmd := "systeminfo"
+		args := []string{"|", "findstr", "/C:\"Total Physical Memory\""}
 		output, err := ExecuteCommand(cmd, args...)
 		if err != nil {
-			return fmt.Errorf("%s: %w", color.RedString("error getting RAM info"), err) // Red
+			return fmt.Errorf("%s: %w", color.RedString("error getting RAM info"), err)
 		}
 		fmt.Println(output)
-
-		cmd = "wmic"
-		args = []string{"os", "get", "TotalVisibleSize,FreePhysicalMemory"}
-		output, err = ExecuteCommand(cmd, args...)
-		if err != nil {
-			return fmt.Errorf("%s: %w", color.RedString("Error getting total and free ram"), err)
-		}
 		fmt.Println(output)
 	default:
 		color.Red("RAM information not available for %s\n", osName)
 	}
 	return nil
 }
-
 func DisplayHardDiskInformation(c *cli.Context) error {
 	osName := GetOS()
 	color.Blue("Hard Disk Information:\n")
@@ -201,8 +183,8 @@ func DisplayHardDiskInformation(c *cli.Context) error {
 		}
 		fmt.Println(output)
 	case "windows":
-		cmd := "wmic"
-		args := []string{"logicaldisk", "get", "Name,Size,FreeSpace"}
+		cmd := "powershell"
+		args := []string{"Get-PSDrive", "-PSProvider", "FileSystem"}
 		output, err := ExecuteCommand(cmd, args...)
 		if err != nil {
 			return fmt.Errorf("%s: %w", color.RedString("error getting disk info"), err)
